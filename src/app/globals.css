@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cursor-x: 50%;
+  --cursor-y: 50%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  cursor: none;
+}
+
+@media (pointer: coarse) {
+  body {
+    cursor: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    cursor: auto;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-accent/40 hover:bg-accent/60;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Film grain overlay */
+.film-grain {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  z-index: 2;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 8s steps(10) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .film-grain {
+    animation: none;
+  }
+}
+
+.smoke-layer {
+  pointer-events: none;
+  position: absolute;
+  inset: -20%;
+  z-index: 1;
+  background: radial-gradient(
+      ellipse 80% 50% at 50% 100%,
+      rgba(255, 0, 60, 0.08) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 20% 60%,
+      rgba(255, 138, 0, 0.06) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 50% 35% at 85% 40%,
+      rgba(255, 255, 255, 0.04) 0%,
+      transparent 45%
+    );
+  animation: smoke 20s ease-in-out infinite;
+  filter: blur(40px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smoke-layer {
+    animation: none;
+  }
+}
