@@ -1,4 +1,5 @@
 import type { CartItem } from "@/lib/cart";
+import { supabase } from "@/lib/supabase";
 
 export type OrderStatus = "new" | "preparing" | "ready" | "done";
 
@@ -14,30 +15,59 @@ export interface KitchenOrder {
   status: OrderStatus;
 }
 
-const ORDERS_KEY = "mekong_kitchen_orders";
+export async function getOrders(): Promise<KitchenOrder[]> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-export function getOrders(): KitchenOrder[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem(ORDERS_KEY) ?? "[]");
-  } catch {
-    return [];
-  }
+  if (error || !data) return [];
+
+  return data.map((row) => ({
+    id: row.id,
+    date: row.created_at,
+    pickupTime: row.pickup_time,
+    note: row.note ?? "",
+    userName: row.user_name ?? "Client",
+    userEmail: row.user_email ?? "",
+    items: row.items ?? [],
+    total: row.total,
+    status: row.status as OrderStatus,
+  }));
 }
 
-export function saveOrder(order: KitchenOrder): void {
-  const orders = getOrders();
-  localStorage.setItem(ORDERS_KEY, JSON.stringify([order, ...orders]));
+export async function saveOrder(order: KitchenOrder): Promise<void> {
+  await supabase.from("orders").insert({
+    id: order.id,
+    user_id: order.userEmail ? undefined : undefined,
+    user_name: order.userName,
+    user_email: order.userEmail,
+    items: order.items,
+    pickup_time: order.pickupTime,
+    note: order.note,
+    total: order.total,
+    status: order.status,
+  });
 }
 
-export function updateOrderStatus(id: string, status: OrderStatus): void {
-  const orders = getOrders().map((o) =>
-    o.id === id ? { ...o, status } : o
-  );
-  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+export async function saveOrderWithUserId(order: KitchenOrder, userId: string): Promise<void> {
+  await supabase.from("orders").insert({
+    id: order.id,
+    user_id: userId,
+    user_name: order.userName,
+    user_email: order.userEmail,
+    items: order.items,
+    pickup_time: order.pickupTime,
+    note: order.note,
+    total: order.total,
+    status: order.status,
+  });
 }
 
-export function clearDoneOrders(): void {
-  const orders = getOrders().filter((o) => o.status !== "done");
-  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+export async function updateOrderStatus(id: string, status: OrderStatus): Promise<void> {
+  await supabase.from("orders").update({ status }).eq("id", id);
+}
+
+export async function clearDoneOrders(): Promise<void> {
+  await supabase.from("orders").delete().eq("status", "done");
 }

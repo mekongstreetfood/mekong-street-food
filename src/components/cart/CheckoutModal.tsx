@@ -14,7 +14,7 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { useCart } from "@/lib/cart";
 import { useLoyalty, type Reward } from "@/lib/loyalty";
 import { useAuth } from "@/lib/auth";
-import { saveOrder } from "@/lib/orders";
+import { saveOrderWithUserId } from "@/lib/orders";
 import { Button } from "@/components/ui/Button";
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY &&
@@ -138,17 +138,19 @@ function CheckoutContent({
     // Crédite les points gagnés sur le montant payé
     earnOrder(totalPrice, pickupTime);
     // Sauvegarde la commande pour la cuisine
-    saveOrder({
-      id: `cmd-${Date.now()}`,
-      date: new Date().toISOString(),
-      pickupTime,
-      note: note ?? "",
-      userName: user?.name ?? "Client",
-      userEmail: user?.email ?? "",
-      items: [...items],
-      total: totalPrice,
-      status: "new",
-    });
+    if (user) {
+      saveOrderWithUserId({
+        id: `cmd-${Date.now()}`,
+        date: new Date().toISOString(),
+        pickupTime,
+        note: note ?? "",
+        userName: user.name,
+        userEmail: user.email,
+        items: [...items],
+        total: totalPrice,
+        status: "new",
+      }, user.id);
+    }
     clearCart();
     setStep("success");
   };

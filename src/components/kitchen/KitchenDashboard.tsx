@@ -10,6 +10,7 @@ import {
   getOrders,
   updateOrderStatus,
 } from "@/lib/orders";
+import { supabase } from "@/lib/supabase";
 
 const STATUS_CONFIG: Record<
   OrderStatus,
@@ -33,9 +34,9 @@ function formatTime(iso: string) {
 function OrderCard({ order, onUpdate }: { order: KitchenOrder; onUpdate: () => void }) {
   const cfg = STATUS_CONFIG[order.status];
 
-  const advance = () => {
+  const advance = async () => {
     if (!cfg.next) return;
-    updateOrderStatus(order.id, cfg.next);
+    await updateOrderStatus(order.id, cfg.next);
     onUpdate();
   };
 
@@ -120,23 +121,21 @@ export function KitchenDashboard() {
   const [orders, setOrders] = useState<KitchenOrder[]>([]);
   const [newCount, setNewCount] = useState(0);
 
-  const reload = () => {
-    const all = getOrders();
+  const reload = async () => {
+    const all = await getOrders();
     setOrders(all);
   };
 
   useEffect(() => {
     reload();
-    // Polling toutes les 5 secondes pour les nouvelles commandes
-    const interval = setInterval(() => {
-      const all = getOrders();
-      const incoming = all.filter((o) => o.status === "new").length;
-      if (incoming > newCount) {
-        setNewCount(incoming);
-      }
-      setOrders(all);
-    }, 5000);
-    return () => clearInterval(interval);
+    // Abonnement temps réel Supabase
+    const channel = supabase
+      .channel("orders-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+        reload();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -159,7 +158,7 @@ export function KitchenDashboard() {
               Cuisine
             </h1>
             <p className="text-xs text-muted">
-              {active.length} commande{active.length !== 1 ? "s" : ""} en cours · mise à jour toutes les 5 s
+              {active.length} commande{active.length !== 1 ? "s" : ""} en cours · temps réel
             </p>
           </div>
           {newCount > 0 && (

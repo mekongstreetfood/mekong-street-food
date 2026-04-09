@@ -6,14 +6,14 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useReducer,
   useState,
 } from "react";
 import type { MenuCategory } from "@/data/menu";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 
 /* ─── Constantes ─── */
-export const POINTS_PER_EURO = 1; // 1 pt par € dépensé
+export const POINTS_PER_EURO = 1;
 
 /* ─── Récompenses ─── */
 export interface Reward {
@@ -32,34 +32,10 @@ export const REWARD_CATEGORY: Record<string, MenuCategory> = {
 };
 
 export const REWARDS: Reward[] = [
-  {
-    id: "soupe",
-    label: "Soupes & Nouilles",
-    description: "Un plat Soupes & Nouilles au choix offert",
-    points: 100,
-    emoji: "🍜",
-  },
-  {
-    id: "wok",
-    label: "Riz & Wok",
-    description: "Un plat Riz & Wok au choix offert",
-    points: 100,
-    emoji: "🍚",
-  },
-  {
-    id: "sandwich",
-    label: "Street Sandwich",
-    description: "Un Street Sandwich au choix offert",
-    points: 80,
-    emoji: "🥖",
-  },
-  {
-    id: "dessert",
-    label: "Dessert & Boisson",
-    description: "Un Dessert ou une Boisson au choix offert(e)",
-    points: 50,
-    emoji: "🧋",
-  },
+  { id: "soupe",    label: "Soupes & Nouilles",  description: "Un plat Soupes & Nouilles au choix offert",       points: 100, emoji: "🍜" },
+  { id: "wok",      label: "Riz & Wok",          description: "Un plat Riz & Wok au choix offert",               points: 100, emoji: "🍚" },
+  { id: "sandwich", label: "Street Sandwich",     description: "Un Street Sandwich au choix offert",              points: 80,  emoji: "🥖" },
+  { id: "dessert",  label: "Dessert & Boisson",   description: "Un Dessert ou une Boisson au choix offert(e)",    points: 50,  emoji: "🧋" },
 ];
 
 /* ─── Types ─── */
@@ -71,118 +47,97 @@ export interface OrderRecord {
   pickupTime: string;
 }
 
-type LoyaltyState = {
-  points: number;
-  history: OrderRecord[];
-};
-
-type LoyaltyAction =
-  | { type: "EARN"; order: OrderRecord }
-  | { type: "REDEEM"; points: number }
-  | { type: "HYDRATE"; state: LoyaltyState };
-
-function reducer(state: LoyaltyState, action: LoyaltyAction): LoyaltyState {
-  switch (action.type) {
-    case "EARN":
-      return {
-        points: state.points + action.order.points,
-        history: [action.order, ...state.history].slice(0, 50),
-      };
-    case "REDEEM":
-      return { ...state, points: Math.max(0, state.points - action.points) };
-    case "HYDRATE":
-      return action.state;
-    default:
-      return state;
-  }
-}
-
-/* ─── Context ─── */
 interface LoyaltyContextValue {
   points: number;
   history: OrderRecord[];
-  earnOrder: (total: number, pickupTime: string) => void;
-  redeemPoints: (pts: number) => void;
+  earnOrder: (total: number, pickupTime: string) => Promise<void>;
+  redeemPoints: (pts: number) => Promise<void>;
   availableRewards: Reward[];
 }
 
 const LoyaltyContext = createContext<LoyaltyContextValue | null>(null);
 
-function loyaltyKey(userId: string | null) {
-  return userId ? `mekong_loyalty_${userId}` : null;
-}
-
 export function LoyaltyProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const userId = user?.id ?? null;
+  const [points, setPoints] = useState(0);
+  const [history, setHistory] = useState<OrderRecord[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const [hydrated, setHydrated] = useState(false);
-  const [state, dispatch] = useReducer(reducer, { points: 0, history: [] });
-
-  // Re-hydrate whenever the logged-in user changes
+  /* ─── Charge les points depuis Supabase quand l'utilisateur change ─── */
   useEffect(() => {
-    setHydrated(false);
-    const key = loyaltyKey(userId);
-    if (!key) {
-      dispatch({ type: "HYDRATE", state: { points: 0, history: [] } });
-      setHydrated(true);
+    if (!user) {
+      setPoints(0);
+      setHistory([]);
       return;
     }
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw) {
-        const parsed: LoyaltyState = JSON.parse(raw);
-        dispatch({ type: "HYDRATE", state: parsed });
-      } else {
-        dispatch({ type: "HYDRATE", state: { points: 0, history: [] } });
-      }
-    } catch {
-      dispatch({ type: "HYDRATE", state: { points: 0, history: [] } });
-    }
-    setHydrated(true);
-  }, [userId]);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    const key = loyaltyKey(userId);
-    if (!key) return;
-    try {
-      localStorage.setItem(key, JSON.stringify(state));
-    } catch {}
-  }, [state, hydrated, userId]);
+    setLoading(true);
+    supabase
+      .from("loyalty")
+      .select("points, history")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setPoints(data.points ?? 0);
+          setHistory(data.history ?? []);
+        } else {
+          setPoints(0);
+          setHistory([]);
+        }
+        setLoading(false);
+      });
+  }, [user]);
 
-  const earnOrder = useCallback((total: number, pickupTime: string) => {
-    const pts = Math.floor(total * POINTS_PER_EURO);
-    const order: OrderRecord = {
-      id: `order-${Date.now()}`,
-      date: new Date().toISOString(),
-      total,
-      points: pts,
-      pickupTime,
-    };
-    dispatch({ type: "EARN", order });
-  }, []);
+  /* ─── Sauvegarde dans Supabase ─── */
+  const save = useCallback(
+    async (newPoints: number, newHistory: OrderRecord[]) => {
+      if (!user) return;
+      await supabase.from("loyalty").upsert(
+        { user_id: user.id, points: newPoints, history: newHistory, updated_at: new Date().toISOString() },
+        { onConflict: "user_id" }
+      );
+    },
+    [user]
+  );
 
-  const redeemPoints = useCallback((pts: number) => {
-    dispatch({ type: "REDEEM", points: pts });
-  }, []);
+  const earnOrder = useCallback(
+    async (total: number, pickupTime: string) => {
+      const pts = Math.floor(total * POINTS_PER_EURO);
+      const order: OrderRecord = {
+        id: `order-${Date.now()}`,
+        date: new Date().toISOString(),
+        total,
+        points: pts,
+        pickupTime,
+      };
+      const newPoints = points + pts;
+      const newHistory = [order, ...history].slice(0, 50);
+      setPoints(newPoints);
+      setHistory(newHistory);
+      await save(newPoints, newHistory);
+    },
+    [points, history, save]
+  );
+
+  const redeemPoints = useCallback(
+    async (pts: number) => {
+      const newPoints = Math.max(0, points - pts);
+      setPoints(newPoints);
+      await save(newPoints, history);
+    },
+    [points, history, save]
+  );
 
   const availableRewards = useMemo(
-    () => REWARDS.filter((r) => state.points >= r.points),
-    [state.points]
+    () => REWARDS.filter((r) => points >= r.points),
+    [points]
   );
 
   return (
-    <LoyaltyContext.Provider
-      value={{
-        points: state.points,
-        history: state.history,
-        earnOrder,
-        redeemPoints,
-        availableRewards,
-      }}
-    >
-      {children}
+    <LoyaltyContext.Provider value={{ points, history, earnOrder, redeemPoints, availableRewards }}>
+      {!loading && children}
+      {loading && children}
     </LoyaltyContext.Provider>
   );
 }
