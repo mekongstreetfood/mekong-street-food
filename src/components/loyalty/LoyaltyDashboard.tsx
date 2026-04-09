@@ -5,11 +5,10 @@ import { Gift, Star, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { useLoyalty, REWARDS, type Reward } from "@/lib/loyalty";
 import { useCart } from "@/lib/cart";
-import { Button } from "@/components/ui/Button";
 import { RewardShop } from "./RewardShop";
 
 export function LoyaltyDashboard() {
-  const { points, history, availableRewards, earnOrder } = useLoyalty();
+  const { points, history, availableRewards } = useLoyalty();
   const { items } = useCart();
   const [activeReward, setActiveReward] = useState<Reward | null>(null);
 
@@ -64,17 +63,6 @@ export function LoyaltyDashboard() {
             </p>
           )}
 
-          {/* Bouton test — à supprimer en production */}
-          <div className="mt-6 border-t border-foreground/10 pt-5">
-            <p className="mb-2 text-xs text-muted">Mode test</p>
-            <Button
-              variant="ghost"
-              className="text-xs"
-              onClick={() => earnOrder(200, "test")}
-            >
-              + 200 points (test)
-            </Button>
-          </div>
         </div>
       </motion.div>
 
