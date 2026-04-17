@@ -48,18 +48,23 @@ export function AuthModal({ open, mode: initialMode, onClose }: AuthModalProps) 
     }
 
     setLoading(true);
-    const res =
-      tab === "login"
-        ? await login(email, password)
-        : await register(name, email, password);
-    setLoading(false);
-
-    if (!res.ok) return setError(res.error ?? "Erreur inconnue.");
-    setSuccess(true);
-    setTimeout(() => {
-      onClose();
-      reset();
-    }, 1200);
+    try {
+      const res =
+        tab === "login"
+          ? await login(email, password)
+          : await register(name, email, password);
+      setLoading(false);
+      if (!res.ok) return setError(res.error ?? "Erreur inconnue.");
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+        reset();
+      }, 1200);
+    } catch (e: unknown) {
+      setLoading(false);
+      setError("Une erreur inattendue s'est produite. Réessayez.");
+      console.error("[AuthModal] handleSubmit exception:", e);
+    }
   };
 
   return (

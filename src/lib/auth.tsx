@@ -36,6 +36,20 @@ const AuthContext = createContext<AuthContextValue>({
   openAuthModal: () => {},
 });
 
+function translateAuthError(msg: string): string {
+  if (!msg) return "Erreur inconnue.";
+  const m = msg.toLowerCase();
+  if (m.includes("invalid login") || m.includes("invalid credentials")) return "Email ou mot de passe incorrect.";
+  if (m.includes("already registered") || m.includes("user already registered")) return "Un compte existe déjà avec cet email.";
+  if (m.includes("email not confirmed")) return "Email non confirmé. Vérifiez votre boîte mail.";
+  if (m.includes("password")) return "Le mot de passe doit faire au moins 6 caractères.";
+  if (m.includes("rate limit") || m.includes("too many")) return "Trop de tentatives. Attendez quelques minutes et réessayez.";
+  if (m.includes("signup") && m.includes("disabled")) return "Les inscriptions sont désactivées. Contactez l'administrateur.";
+  if (m.includes("network") || m.includes("fetch")) return "Erreur réseau. Vérifiez votre connexion internet.";
+  if (m.includes("email") && m.includes("invalid")) return "Adresse email invalide.";
+  return msg;
+}
+
 function sessionToUser(session: Session | null): User | null {
   if (!session?.user) return null;
   return {
@@ -53,48 +67,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Récupère la session active au démarrage
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(sessionToUser(session));
-      setLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setUser(sessionToUser(session));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("[Auth] getSession error:", err);
+        setUser(null);
+        setLoading(false);
+      });
 
     // Écoute les changements de session (login/logout sur un autre onglet)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(sessionToUser(session));
-      setLoading(false);
-    });
+    let subscription: { unsubscribe: () => void } | null = null;
+    try {
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(sessionToUser(session));
+        setLoading(false);
+      });
+      subscription = data.subscription;
+    } catch (err) {
+      console.error("[Auth] onAuthStateChange error:", err);
+    }
 
-    return () => subscription.unsubscribe();
+    return () => subscription?.unsubscribe();
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      const msg = error.message.includes("Invalid login")
-        ? "Email ou mot de passe incorrect."
-        : error.message;
-      return { ok: false, error: msg };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        console.error("[Auth] login error:", error);
+        return { ok: false, error: translateAuthError(error.message) };
+      }
+      return { ok: true };
+    } catch (e: unknown) {
+      console.error("[Auth] login exception:", e);
+      return { ok: false, error: "Impossible de se connecter. Vérifiez votre connexion internet." };
     }
-    return { ok: true };
   }, []);
 
   const register = useCallback(async (name: string, email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { name: name.trim() } },
-    });
-    if (error) {
-      const msg = error.message.includes("already registered")
-        ? "Un compte existe déjà avec cet email."
-        : error.message;
-      return { ok: false, error: msg };
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name: name.trim() } },
+      });
+      if (error) {
+        console.error("[Auth] register error:", error);
+        return { ok: false, error: translateAuthError(error.message) };
+      }
+      return { ok: true };
+    } catch (e: unknown) {
+      console.error("[Auth] register exception:", e);
+      return { ok: false, error: "Impossible de créer le compte. Vérifiez votre connexion internet." };
     }
-    return { ok: true };
   }, []);
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (_) {}
     setUser(null);
   }, []);
 
