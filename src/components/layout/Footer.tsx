@@ -44,6 +44,11 @@ export function Footer() {
                   Contact
                 </Link>
               </li>
+              <li>
+                <Link href="/mentions-legales" className="hover:text-foreground">
+                  Mentions légales
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -59,9 +64,12 @@ export function Footer() {
             </p>
           </div>
         </div>
-        <p className="mt-10 border-t border-foreground/10 pt-8 text-center text-xs text-muted">
-          © {new Date().getFullYear()} Mekong Street Food. Tous droits réservés.
-        </p>
+        <div className="mt-10 border-t border-foreground/10 pt-8 flex flex-col items-center gap-2 text-center text-xs text-muted sm:flex-row sm:justify-between">
+          <p>© {new Date().getFullYear()} Mekong Street Food. Tous droits réservés.</p>
+          <Link href="/mentions-legales" className="hover:text-foreground underline-offset-2 hover:underline">
+            Mentions légales
+          </Link>
+        </div>
       </div>
     </footer>
   );
