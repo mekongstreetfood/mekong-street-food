@@ -4,7 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 const STORY_IMAGE =
-  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1100&q=80";
+  "https://images.unsplash.com/photo-1552912470-ee2e96439539?w=1400&q=80";
 
 const countries = [
   {
@@ -34,10 +34,10 @@ export function AboutContent() {
       <h1 className="mt-2 font-display text-4xl font-bold text-foreground md:text-5xl">
         Voyage le long du Mékong
       </h1>
-      <p className="mt-6 max-w-3xl text-lg text-muted">
+        <p className="mt-6 max-w-3xl text-lg text-muted">
         Du delta au marché de nuit, nous suivons le fleuve pour rassembler ce
         qui fait la magie de la street food : produits frais, cuisine maison,
-        recettes transmises, et une promesse{" "}
+        et une promesse{" "}
         <strong className="text-foreground">100 % halal</strong> pour accueillir
         tous les gourmands.
       </p>
@@ -45,7 +45,7 @@ export function AboutContent() {
       <div className="relative mt-14 aspect-[21/9] overflow-hidden rounded-3xl border border-foreground/10">
         <Image
           src={STORY_IMAGE}
-          alt="Cuisine et ingrédients — placeholder à remplacer"
+          alt="Cuisinière à un stand de street food asiatique"
           fill
           loading="lazy"
           className="object-cover"
