@@ -25,17 +25,17 @@ export interface Reward {
 }
 
 export const REWARD_CATEGORY: Record<string, MenuCategory> = {
-  soupe:    "Soupes & nouilles",
-  wok:      "Riz & wok",
-  sandwich: "Street sandwiches",
-  dessert:  "Desserts & boissons",
+  soupe:    "Bowls & Nouilles",
+  wok:      "Woks & Curry",
+  sandwich: "Sandwichs Street Food",
+  dessert:  "Desserts & Glaces",
 };
 
 export const REWARDS: Reward[] = [
-  { id: "soupe",    label: "Soupes & Nouilles",  description: "Un plat Soupes & Nouilles au choix offert",       points: 100, emoji: "🍜" },
-  { id: "wok",      label: "Riz & Wok",          description: "Un plat Riz & Wok au choix offert",               points: 100, emoji: "🍚" },
-  { id: "sandwich", label: "Street Sandwich",     description: "Un Street Sandwich au choix offert",              points: 80,  emoji: "🥖" },
-  { id: "dessert",  label: "Dessert & Boisson",   description: "Un Dessert ou une Boisson au choix offert(e)",    points: 50,  emoji: "🧋" },
+  { id: "soupe",    label: "Bowls & Nouilles",    description: "Un plat Bowls & Nouilles au choix offert",        points: 100, emoji: "🍜" },
+  { id: "wok",      label: "Woks & Curry",        description: "Un plat Woks & Curry au choix offert",            points: 100, emoji: "🍚" },
+  { id: "sandwich", label: "Street Sandwich",     description: "Un Sandwich Street Food au choix offert",         points: 80,  emoji: "🥖" },
+  { id: "dessert",  label: "Dessert & Glace",     description: "Un Dessert ou une Glace au choix offert(e)",      points: 50,  emoji: "🧋" },
 ];
 
 /* ─── Types ─── */
