@@ -41,7 +41,7 @@ export function HomeHighlights() {
           >
             <Image
               src={IMG}
-              alt="Plats colorés — placeholder à remplacer"
+              alt="Plats Mekong Street Food — cuisine asiatique halal"
               fill
               loading="lazy"
               sizes="(max-width:1024px) 100vw, 50vw"
@@ -54,7 +54,7 @@ export function HomeHighlights() {
               Pourquoi nous choisir
             </p>
             <h2 className="mt-3 font-display text-3xl font-bold text-foreground md:text-4xl">
-              Une expérience street food, pensée comme une app native.
+              Une street food authentique, préparée avec passion.
             </h2>
             <ul className="mt-10 space-y-5">
               {items.map(({ title, text, icon: Icon }, i) => (

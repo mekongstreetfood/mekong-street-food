@@ -5,14 +5,7 @@ import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import type { GoogleReview } from "@/app/api/reviews/route";
 
-const FALLBACK_REVIEWS = [
-  { author_name: "Camille R.", rating: 5, text: "Le Phở Mékong est incroyable — bouillon parfumé, viande fondante. Je reviens chaque semaine.", relative_time_description: "il y a 2 semaines", profile_photo_url: "" },
-  { author_name: "Youssef M.", rating: 5, text: "Cuisine 100 % halal et tellement savoureuse. Le Lok Lak est une révélation. Service rapide.", relative_time_description: "il y a 1 mois", profile_photo_url: "" },
-  { author_name: "Sophie D.", rating: 5, text: "Le meilleur Bánh Mì du secteur. Tout est frais, généreux. L'équipe est adorable.", relative_time_description: "il y a 3 semaines", profile_photo_url: "" },
-  { author_name: "Karim B.", rating: 5, text: "Thai tea + pad thaï = combo parfait. Un vrai voyage sensoriel dès la première bouchée.", relative_time_description: "il y a 2 mois", profile_photo_url: "" },
-  { author_name: "Léa T.", rating: 5, text: "Les rouleaux vegan sont légers et généreux. L'ambiance street food est au top !", relative_time_description: "il y a 1 semaine", profile_photo_url: "" },
-  { author_name: "Mehdi A.", rating: 5, text: "Plats encore chauds, service souriant. Le curry vert est mémorable.", relative_time_description: "il y a 3 mois", profile_photo_url: "" },
-];
+const FALLBACK_REVIEWS: GoogleReview[] = [];
 
 function Stars({ n }: { n: number }) {
   return (
@@ -98,39 +91,48 @@ export function Testimonials() {
           </a>
         </motion.div>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {reviews.map((r, i) => (
-            <motion.blockquote
-              key={`${r.author_name}-${i}`}
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ delay: i * 0.05, duration: 0.4 }}
-              className="flex flex-col gap-4 rounded-3xl border border-foreground/10 bg-foreground/[0.04] p-6"
-            >
-              <Stars n={r.rating} />
-              <p className="flex-1 text-sm leading-relaxed text-foreground/85">
-                &ldquo;{r.text}&rdquo;
-              </p>
-              <footer className="flex items-center justify-between border-t border-foreground/10 pt-4">
-                <div className="flex items-center gap-2.5">
-                  <Avatar name={r.author_name} src={r.profile_photo_url} />
-                  <p className="font-medium text-foreground">{r.author_name}</p>
-                </div>
-                <p className="text-xs text-muted">{r.relative_time_description}</p>
-              </footer>
-            </motion.blockquote>
-          ))}
-        </div>
-
-        {!fromGoogle && (
-          <p className="mt-6 text-center text-xs text-muted">
-            Avis provisoires — configurez{" "}
-            <code className="rounded bg-foreground/10 px-1.5 py-0.5 font-mono text-accent">
-              GOOGLE_PLACES_API_KEY
-            </code>{" "}
-            dans <code className="rounded bg-foreground/10 px-1.5 py-0.5 font-mono text-accent">.env.local</code> pour afficher vos vrais avis Google.
-          </p>
+        {reviews.length > 0 ? (
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {reviews.map((r, i) => (
+              <motion.blockquote
+                key={`${r.author_name}-${i}`}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: i * 0.05, duration: 0.4 }}
+                className="flex flex-col gap-4 rounded-3xl border border-foreground/10 bg-foreground/[0.04] p-6"
+              >
+                <Stars n={r.rating} />
+                <p className="flex-1 text-sm leading-relaxed text-foreground/85">
+                  &ldquo;{r.text}&rdquo;
+                </p>
+                <footer className="flex items-center justify-between border-t border-foreground/10 pt-4">
+                  <div className="flex items-center gap-2.5">
+                    <Avatar name={r.author_name} src={r.profile_photo_url} />
+                    <p className="font-medium text-foreground">{r.author_name}</p>
+                  </div>
+                  <p className="text-xs text-muted">{r.relative_time_description}</p>
+                </footer>
+              </motion.blockquote>
+            ))}
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+            className="mt-10 flex flex-col items-center gap-4 rounded-3xl border border-foreground/10 bg-foreground/[0.04] px-8 py-14 text-center"
+          >
+            <div className="flex gap-0.5">
+              {[1,2,3,4,5].map((i) => (
+                <Star key={i} className="h-6 w-6 fill-amber-400 text-amber-400" />
+              ))}
+            </div>
+            <p className="max-w-sm text-muted">
+              Vous avez aimé votre repas ? Partagez votre expérience sur Google et aidez-nous à faire connaître Mekong Street Food.
+            </p>
+          </motion.div>
         )}
       </div>
     </section>

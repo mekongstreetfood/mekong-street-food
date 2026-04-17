@@ -27,7 +27,7 @@ const countries = [
   {
     flag: "🇨🇳",
     name: "Chine du Sud",
-    tag: "Dim Sum · Wonton · Char Siu",
+    tag: "Dim Sum · Wonton · Raviolis",
     text: "Influence millénaire du fleuve Mékong : sauces fermentées, nouilles, saveurs profondes.",
     color: "from-yellow-500/20 to-red-500/10",
   },

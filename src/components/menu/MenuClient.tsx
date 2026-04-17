@@ -43,8 +43,7 @@ export function MenuClient() {
           Menu Mékong
         </h1>
         <p className="mt-4 text-muted">
-          Filtrez par catégorie — sans rechargement. Remplacez les visuels
-          Unsplash par vos photos.
+          Filtrez par catégorie et commandez directement en ligne.
         </p>
       </motion.div>
 
