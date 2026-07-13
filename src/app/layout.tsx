@@ -10,6 +10,7 @@ import { CartProvider } from "@/lib/cart";
 import { LoyaltyProvider } from "@/lib/loyalty";
 import { AuthProvider } from "@/lib/auth";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { isMaintenanceMode } from "@/lib/maintenance";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -71,21 +72,29 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const maintenance = isMaintenanceMode();
+
   return (
     <html lang="fr" className={`${inter.variable} ${oswald.variable}`}>
-      <body className="min-h-dvh font-sans">
+      <body className={`min-h-dvh font-sans ${maintenance ? "cursor-auto" : ""}`}>
         <AuthProvider>
-        <LoyaltyProvider>
-        <CartProvider>
-          <RestaurantJsonLd />
-          <CustomCursor />
-          <Header />
-          <CartDrawer />
-          <main className="min-h-dvh">{children}</main>
-          <Footer />
-          <BottomTabBar />
-        </CartProvider>
-        </LoyaltyProvider>
+          <LoyaltyProvider>
+            <CartProvider>
+              {maintenance ? (
+                children
+              ) : (
+                <>
+                  <RestaurantJsonLd />
+                  <CustomCursor />
+                  <Header />
+                  <CartDrawer />
+                  <main className="min-h-dvh">{children}</main>
+                  <Footer />
+                  <BottomTabBar />
+                </>
+              )}
+            </CartProvider>
+          </LoyaltyProvider>
         </AuthProvider>
       </body>
     </html>
