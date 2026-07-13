@@ -104,7 +104,7 @@ export function MaintenanceScreen() {
           className="mt-8 inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/[0.04] px-5 py-2.5 text-sm text-muted"
         >
           <Clock className="h-4 w-4 text-accent-secondary" />
-          Lun–Dim · 10h–23h
+          Lun–Dim · 11h–23h
         </motion.div>
 
         <motion.a

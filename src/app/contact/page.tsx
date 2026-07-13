@@ -20,7 +20,7 @@ const infos = [
     icon: Phone,
     label: "Téléphone",
     value: "+33 0 00 00 00 00",
-    sub: "Lun–Dim · 10h–23h",
+    sub: "Lun–Dim · 11h–23h",
     color: "text-accent",
   },
   {
