@@ -17,6 +17,9 @@ function formatSlot(totalMin: number) {
 /** Génère les créneaux disponibles (toutes les 30 min, min +30 min par rapport à now) */
 export function getPickupSlots(): string[] {
   const now = new Date();
+  const day = now.getDay(); // 0 = dimanche, 3 = mercredi
+  if (day === 0 || day === 3) return [];
+
   const nowMin = toMinutes(now.getHours(), now.getMinutes());
   const minPickup = nowMin + 30; // au moins 30 min dans le futur
 

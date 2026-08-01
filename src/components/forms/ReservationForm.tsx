@@ -172,7 +172,16 @@ export function ReservationForm() {
                 <input
                   type="date"
                   className={cn(inputClass, errors.date && "border-red-500/60")}
-                  {...register("date", { required: "Choisissez une date" })}
+                  {...register("date", {
+                    required: "Choisissez une date",
+                    validate: (value) => {
+                      const day = new Date(value + "T12:00:00").getDay();
+                      if (day === 0 || day === 3) {
+                        return "Fermé le mercredi et le dimanche";
+                      }
+                      return true;
+                    },
+                  })}
                 />
                 {errors.date && (
                   <p className="mt-1 text-xs text-red-400">{errors.date.message}</p>

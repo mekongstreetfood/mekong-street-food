@@ -13,9 +13,11 @@ const SIDE_IMAGE =
   "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900&q=80";
 
 const horaires = [
-  { jour: "Lundi – Vendredi", midi: "11h30 – 14h30", soir: "18h30 – 22h30" },
+  { jour: "Lundi – Mardi", midi: "11h30 – 14h30", soir: "18h30 – 22h30" },
+  { jour: "Mercredi", midi: "Fermé", soir: "Fermé" },
+  { jour: "Jeudi – Vendredi", midi: "11h30 – 14h30", soir: "18h30 – 22h30" },
   { jour: "Samedi", midi: "11h30 – 15h00", soir: "18h00 – 23h00" },
-  { jour: "Dimanche", midi: "12h00 – 15h00", soir: "18h30 – 22h00" },
+  { jour: "Dimanche", midi: "Fermé", soir: "Fermé" },
 ];
 
 export default function ReservationPage() {

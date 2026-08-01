@@ -20,7 +20,7 @@ const infos = [
     icon: Phone,
     label: "Téléphone",
     value: "+33 0 00 00 00 00",
-    sub: "Lun–Dim · 11h–23h",
+    sub: "Lun–Mar, Jeu–Sam · Fermé mer. & dim.",
     color: "text-accent",
   },
   {
@@ -40,9 +40,11 @@ const infos = [
 ];
 
 const horaires = [
-  { jour: "Lundi – Vendredi", midi: "11h30 – 14h30", soir: "18h30 – 22h30" },
+  { jour: "Lundi – Mardi", midi: "11h30 – 14h30", soir: "18h30 – 22h30" },
+  { jour: "Mercredi", midi: "Fermé", soir: "Fermé" },
+  { jour: "Jeudi – Vendredi", midi: "11h30 – 14h30", soir: "18h30 – 22h30" },
   { jour: "Samedi", midi: "11h30 – 15h00", soir: "18h00 – 23h00" },
-  { jour: "Dimanche", midi: "12h00 – 15h00", soir: "18h30 – 22h00" },
+  { jour: "Dimanche", midi: "Fermé", soir: "Fermé" },
 ];
 
 export default function ContactPage() {

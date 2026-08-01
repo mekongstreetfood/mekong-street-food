@@ -56,7 +56,9 @@ export function Footer() {
               Horaires
             </p>
             <p className="mt-4 text-sm text-muted">
-              Lun–Dim · 11h30 – 14h30 · 18h30 – 22h30
+              Lun–Mar, Jeu–Sam · 11h30 – 14h30 · 18h30 – 22h30
+              <br />
+              Fermé mercredi &amp; dimanche
               <br />
               <span className="text-foreground/80">
                 368 route du Forez<br />07430 Davézieux
