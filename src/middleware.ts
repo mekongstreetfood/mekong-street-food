@@ -1,11 +1,26 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isMaintenanceMode } from "@/lib/maintenance";
 
-/** Redirection maintenance désactivée — le site est en ligne.
- *  Pour réactiver : if (process.env.MAINTENANCE_MODE === "true") { ... rewrite /maintenance }
- */
-export function middleware(_request: NextRequest) {
-  return NextResponse.next();
+export function middleware(request: NextRequest) {
+  if (!isMaintenanceMode()) {
+    return NextResponse.next();
+  }
+
+  const { pathname } = request.nextUrl;
+
+  if (
+    pathname.startsWith("/maintenance") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.includes(".")
+  ) {
+    return NextResponse.next();
+  }
+
+  const url = request.nextUrl.clone();
+  url.pathname = "/maintenance";
+  return NextResponse.rewrite(url);
 }
 
 export const config = {
